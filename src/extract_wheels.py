@@ -28,7 +28,7 @@ def extract_extra(name):
     if '[' in name:
         name, extras = name.split('[')
         extras = extras.replace(']','').split(',')
-    return extras, name
+    return name, extras
     
 def sanitise_name(name):
     """
