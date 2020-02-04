@@ -121,6 +121,10 @@ def main():
 
     for whl in [wheel.Wheel(whl) for whl in glob.glob("*.whl")]:
         name, _ = extract_extra(whl.name())
+        subprocess.check_output(
+        [sys.executable, "-m", "wheel", "install-scripts", whl.name+".whl"]
+        )
+     
         whl_label = sanitise_name(name)
         os.mkdir(whl_label)
         extract_wheel(whl, whl_label, [])
