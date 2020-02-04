@@ -84,7 +84,7 @@ def extract_wheel(whl, directory, extras):
     with open(os.path.join(directory, "BUILD"), "w") as f:
         f.write(
             BUILD_TEMPLATE.format(
-                name, extras=sanitise_name(name),
+                name=sanitise_name(name),
                 dependencies=",".join(
                     # Python libraries cannot have hyphen https://github.com/bazelbuild/bazel/issues/9171
                     [
@@ -120,7 +120,8 @@ def main():
     targets = set()
 
     for whl in [wheel.Wheel(whl) for whl in glob.glob("*.whl")]:
-        whl_label = sanitise_name(whl.name())
+        name, _ = extract_extra(whl.name())
+        whl_label = sanitise_name(name)
         os.mkdir(whl_label)
         extract_wheel(whl, whl_label, [])
         targets.add('"{repo}//{name}"'.format(repo=args.repo, name=whl_label))
