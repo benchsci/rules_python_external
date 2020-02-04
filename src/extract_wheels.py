@@ -35,8 +35,10 @@ def sanitise_name(name):
 
     Due to restrictions on Bazel labels we also cannot allow hyphens. See https://github.com/bazelbuild/bazel/issues/6841
     """
-    name, extras = name.split('[')
-    extras = extras.replace(']').split(',')
+    extras = []
+    if '[' in name:
+        name, extras = name.split('[')
+        extras = extras.replace(']','').split(',')
     return "pypi__" + name.replace("-", "_").replace(".", "_").lower(), extras
 
 
