@@ -23,7 +23,13 @@ py_library(
 )
 """
 
-
+def extract_extra(name):
+    extras = []
+    if '[' in name:
+        name, extras = name.split('[')
+        extras = extras.replace(']','').split(',')
+    return extras, name
+    
 def sanitise_name(name):
     """
     There are certain requirements around Bazel labels that we need to consider.
@@ -35,11 +41,8 @@ def sanitise_name(name):
 
     Due to restrictions on Bazel labels we also cannot allow hyphens. See https://github.com/bazelbuild/bazel/issues/6841
     """
-    extras = []
-    if '[' in name:
-        name, extras = name.split('[')
-        extras = extras.replace(']','').split(',')
-    return "pypi__" + name.replace("-", "_").replace(".", "_").lower(), extras
+    
+    return "pypi__" + name.replace("-", "_").replace(".", "_").lower()
 
 
 def _setup_namespace_pkg_compatibility(extracted_whl_directory):
@@ -77,11 +80,11 @@ def extract_wheel(whl, directory, extras):
     whl.unzip(directory)
 
     _setup_namespace_pkg_compatibility(directory)
-
+    name, extras = extract_extra(whl.name())
     with open(os.path.join(directory, "BUILD"), "w") as f:
         f.write(
             BUILD_TEMPLATE.format(
-                name, extras=sanitise_name(whl.name()),
+                name, extras=sanitise_name(name),
                 dependencies=",".join(
                     # Python libraries cannot have hyphen https://github.com/bazelbuild/bazel/issues/9171
                     [
