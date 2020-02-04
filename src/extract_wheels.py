@@ -3,6 +3,7 @@ import glob
 import os
 import subprocess
 import sys
+import re
 
 from src import wheel, namespace_pkgs
 
@@ -34,7 +35,9 @@ def sanitise_name(name):
 
     Due to restrictions on Bazel labels we also cannot allow hyphens. See https://github.com/bazelbuild/bazel/issues/6841
     """
-    return "pypi__" + name.replace("-", "_").replace(".", "_").lower()
+    name, extras = name.split('[')
+    extras = extras.replace(']').split(',')
+    return "pypi__" + name.replace("-", "_").replace(".", "_").lower(), extras
 
 
 def _setup_namespace_pkg_compatibility(extracted_whl_directory):
@@ -76,7 +79,7 @@ def extract_wheel(whl, directory, extras):
     with open(os.path.join(directory, "BUILD"), "w") as f:
         f.write(
             BUILD_TEMPLATE.format(
-                name=sanitise_name(whl.name()),
+                name, extras=sanitise_name(whl.name()),
                 dependencies=",".join(
                     # Python libraries cannot have hyphen https://github.com/bazelbuild/bazel/issues/9171
                     [
